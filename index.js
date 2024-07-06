@@ -1,32 +1,40 @@
+require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
-const Product = require('./models/product.model.js');
 const productRoute = require("./routes/product.route.js");
+const userRoute = require("./routes/user.route.js");
+const authRoutes = require("./routes/auth.route.js");
 const app = express();
 
-// middlewares
+// Middleware
 app.use(express.json());
-// app.use(express.urlencoded( {extended: false} ));
+app.use(cors());
+app.use(cookieParser());
 
-
-// routes
+// Routes
 app.use("/api/products", productRoute);
+app.use("/api/users", userRoute);
+app.use("/api/auth", authRoutes);
 
 
 
-app.get('/', function (req, res) {
-    res.send('Hello World')
+// Error Handling Middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something went wrong!');
 });
 
 
-
-mongoose.connect('mongodb+srv://yakzan:StRoNgPaSs-006@backenddb.uwwbyhh.mongodb.net/Node-API?retryWrites=true&w=majority&appName=BackendDB')
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
-    console.log("Connected!");
-    app.listen(3000, () => {
-        console.log("server is running on port 3000");
+    console.log("Connected to MongoDB!");
+    app.listen(process.env.PORT || 3000, () => {
+      console.log(`Server is running on port ${process.env.PORT || 3000}`);
     });
   })
-  .catch(() => {
-    console.log("Failed");
+  .catch((err) => {
+    console.error("Failed to connect to MongoDB:", err.message);
   });
