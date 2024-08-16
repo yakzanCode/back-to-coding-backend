@@ -80,10 +80,12 @@ const addToFavorites = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        if (!user.favorites.includes(productId)) {
-            user.favorites.push(productId);
-            await user.save();
+        if (user.favorites.includes(productId)) {
+            return res.status(400).json({ message: 'Product already in favorites' });
         }
+
+        user.favorites.push(productId);
+        await user.save();
 
         res.status(200).json({ message: 'Product added to favorites' });
     } catch (error) {
@@ -104,6 +106,10 @@ const removeFromFavorites = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        if (!user.favorites.includes(productId)) {
+            return res.status(400).json({ message: 'Product not found in favorites' });
+        }
+
         user.favorites = user.favorites.filter(fav => fav.toString() !== productId);
         await user.save();
 
@@ -113,6 +119,7 @@ const removeFromFavorites = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
 
 module.exports = {
     getAllUsers,
